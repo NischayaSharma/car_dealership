@@ -59,7 +59,7 @@ def new():
     liceNum.grid(row=3,column=1)
    
     cmd = "CREATE TABLE IF NOT EXISTS 'customer' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'name' TEXT DEFAULT NULL, 'phone' NUMERIC DEFAULT NULL, 'email' TEXT DEFAULT NULL, 'licenseNum' TEXT DEFAULT NULL);"
-    cmd1 = "CREATE TABLE IF NOT EXISTS 'car_det' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'ownerId' NUMERIC DEFAULT NULL REFERENCES 'customer' ('id'), 'type' TEXT DEFAULT NULL, 'name' TEXT DEFAULT NULL, 'kilometers' INTEGER DEFAULT NULL, 'new field' TEXT DEFAULT NULL, 'insurance' TEXT DEFAULT NULL, 'engineNum' TEXT DEFAULT NULL, 'chassisNum' TEXT DEFAULT NULL);"
+    cmd1 = "CREATE TABLE IF NOT EXISTS 'car_det' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'ownerId' NUMERIC DEFAULT NULL REFERENCES 'customer' ('id'), 'type' TEXT DEFAULT NULL, 'name' TEXT DEFAULT NULL, 'kilometers' INTEGER DEFAULT NULL, 'insurance' TEXT DEFAULT NULL, 'engineNum' TEXT DEFAULT NULL, 'chassisNum' TEXT DEFAULT NULL);"
     cmd2 = "CREATE TABLE IF NOT EXISTS 'repair' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'ownerId' NUMERIC DEFAULT NULL REFERENCES 'customer' ('id'), 'carId' NUMERIC DEFAULT NULL REFERENCES 'car_det' ('id'), 'engine' INTEGER DEFAULT NULL, 'carWash' TEXT DEFAULT NULL, 'tireChange' INTEGER DEFAULT NULL, 'bodyReshaping' INTEGER DEFAULT NULL, 'desc_engine' TEXT DEFAULT NULL, 'desc_tire' TEXT DEFAULT NULL, 'desc_body' TEXT DEFAULT NULL);"
     cur.execute(cmd)
     cur.execute(cmd1)
@@ -169,8 +169,43 @@ def repair():
         print(cmd)
         cur.execute(cmd)
         conn.commit()
+        billboard()
     submitBtn = Button(repair,text="Submit",command=submit)
     submitBtn.grid(row=4)
+
+
+
+def billboard():
+    bill = Toplevel()
+    info=cur.execute("SELECT * FROM customer c, car_det cd, repair r WHERE c.id=cd.ownerId AND c.id=r.ownerId AND cd.id=r.carId AND c.id="+str(current_user)+" AND cd.id="+str(current_car))
+    rows=info.fetchall()
+    print(rows)
+    Label(bill,text="Name:", justify=LEFT, anchor="w").grid(sticky=W, row=0,column=0)
+    Label(bill,text=rows[0][1], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=1)
+
+    Label(bill,text="Phone Number:", justify=LEFT, anchor="w").grid(sticky=W, row=1,column=0)
+    Label(bill,text=rows[0][2], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=1)
+    
+    Label(bill,text="E-Mail:", justify=LEFT, anchor="w").grid(sticky=W, row=2,column=0)
+    Label(bill,text=rows[0][3], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=1)
+
+    Label(bill,text="License Number:", justify=LEFT, anchor="w").grid(sticky=W, row=3,column=0)
+    Label(bill,text=rows[0][4], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=1)
+
+    for i in range(4):
+        Label(bill,text="|").grid(row=i,column=2)
+
+    Label(bill,text="Car Type:", justify=LEFT, anchor="w").grid(sticky=W, row=0,column=3)
+    Label(bill,text=rows[0][7], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=4)
+
+    Label(bill,text="Car Name:", justify=LEFT, anchor="w").grid(sticky=W, row=1,column=3)
+    Label(bill,text=rows[0][8], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=4)
+
+    Label(bill,text="Kilometers Driven:", justify=LEFT, anchor="w").grid(sticky=W, row=2,column=3)
+    Label(bill,text=rows[0][9], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=4)
+
+    Label(bill, text="Insurance Number:", justify=LEFT, anchor="w").grid(sticky=W, row=3, column=3)
+    Label(bill,text=rows[0][10], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=4)
 
 
 dashboard()
