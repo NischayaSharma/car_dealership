@@ -4,7 +4,7 @@ import sqlite3
 root = Tk()
 conn = sqlite3.connect("database.db")
 cur = conn.cursor()
-logged_in_user=None
+current_user=current_car=desc_eng = desc_tire = desc_body = ""
 
 
 
@@ -31,7 +31,7 @@ def oldNew():
 
 
 def old():
-    global logged_in_user
+    global current_user
     oldCust = Toplevel()
     Label(oldCust, text="Enter the phone number: ").grid(row=0, column=0)
     num = Entry(oldCust)
@@ -66,13 +66,14 @@ def new():
     cur.execute(cmd2)
     conn.commit()
     def insertCust():
-        global logged_in_user
+        global current_user
         cmd = "INSERT INTO customer(name, phone, email, licenseNum) VALUES (\""+name.get()+"\", "+str(phNum.get())+", \""+email.get()+"\", \""+liceNum.get()+"\")"
         cur.execute(cmd)
         conn.commit()
-        cur.execute("SELECT id FROM customer WHERE phone="+str(phNum.get()))
+        cur.execute("SELECT id FROM customer")
         id = cur.fetchall()
-        logged_in_user = id[0][0]
+        current_user = id[len(id)-1][0]
+        print(current_user)
         carDetails()
     submitBtn = Button(newCust,text="Submit",command=insertCust)
     submitBtn.grid(row=4)
@@ -108,9 +109,14 @@ def carDetails():
     insNum.grid(row=5,column=1)
     
     def insertCar():
-        cmd = "INSERT INTO car_det(ownerId, type, name, kilometers, insurance, engineNum, chassisNum) VALUES ("+str(logged_in_user)+", \""+carType.get()+"\", \""+carName.get()+"\", "+str(km.get())+", \""+insNum.get()+"\", \""+str(engNum.get())+"\", \""+chasNum.get()+"\")"
+        global current_car
+        cmd = "INSERT INTO car_det(ownerId, type, name, kilometers, insurance, engineNum, chassisNum) VALUES ("+str(current_user)+", \""+carType.get()+"\", \""+carName.get()+"\", "+str(km.get())+", \""+insNum.get()+"\", \""+str(engNum.get())+"\", \""+chasNum.get()+"\")"
         cur.execute(cmd)
         conn.commit()
+        cur.execute("SELECT id FROM car_det")
+        id = cur.fetchall()
+        current_car = id[len(id)-1][0]
+        print(current_car)
         repair()
 
     submitBtn = Button(carDet,text="Submit",command=insertCar)
@@ -119,7 +125,6 @@ def carDetails():
 
 def repair():
     repair=Toplevel()
-    desc_eng = desc_tire = desc_body = ""
     Label(repair, text="Engine Repair").grid(row=0,column=0)
     Label(repair, text="Car Wash").grid(row=1,column=0)
     Label(repair, text="Tires Change").grid(row=2,column=0)
@@ -128,7 +133,45 @@ def repair():
     engRep = IntVar()
     yes = Radiobutton(repair, text="Yes", variable=engRep, value=1)
     no = Radiobutton(repair, text="No", variable=engRep, value=0)
+    desc_eng = Entry(repair)
+    desc_eng.grid(row=0,column=3)
     yes.grid(row=0,column=1)
     no.grid(row=0,column=2)
+
+    carWash = StringVar()
+    dry = Radiobutton(repair, text="Dry Wash", variable=carWash, value="dry")
+    wet = Radiobutton(repair, text="Wet Wash", variable=carWash, value="wet")
+    dlx = Radiobutton(repair, text="Deluxe Wash", variable=carWash, value="deluxe")
+    dry.grid(row=1,column=1)
+    wet.grid(row=1,column=2)
+    dlx.grid(row=1,column=3)
+
+    tire = IntVar()
+    yes = Radiobutton(repair, text="Yes", variable=tire, value=1)
+    no = Radiobutton(repair, text="No", variable=tire, value=0)
+    desc_tire = Entry(repair)
+    desc_tire.grid(row=2,column=3)
+    yes.grid(row=2,column=1)
+    no.grid(row=2,column=2)
+
+    body = IntVar()
+    yes = Radiobutton(repair, text="Yes", variable=body, value=1)
+    no = Radiobutton(repair, text="No", variable=body, value=0)
+    desc_body = Entry(repair)
+    desc_body.grid(row=3,column=3)
+    yes.grid(row=3,column=1)
+    no.grid(row=3,column=2)
+
+    def submit():
+        global current_car
+        global current_user
+        cmd = "INSERT INTO repair(ownerId,carId,engine,carWash,tireChange,bodyReshaping,desc_engine,desc_tire,desc_body) VALUES ("+str(current_user)+", "+str(current_car)+", "+str(engRep.get())+", \""+carWash.get()+"\", "+str(tire.get())+", "+str(body.get())+", \""+desc_eng.get()+"\", \""+desc_tire.get()+"\", \""+desc_body.get()+"\")"
+        print(cmd)
+        cur.execute(cmd)
+        conn.commit()
+    submitBtn = Button(repair,text="Submit",command=submit)
+    submitBtn.grid(row=4)
+
+
 dashboard()
 root.mainloop()
