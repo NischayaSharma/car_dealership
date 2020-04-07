@@ -142,6 +142,8 @@ def repair():
     dry = Radiobutton(repair, text="Dry Wash", variable=carWash, value="dry")
     wet = Radiobutton(repair, text="Wet Wash", variable=carWash, value="wet")
     dlx = Radiobutton(repair, text="Deluxe Wash", variable=carWash, value="deluxe")
+    none = Radiobutton(repair, text="None", variable=carWash, value="none")
+    none.grid(row=1,column=4)
     dry.grid(row=1,column=1)
     wet.grid(row=1,column=2)
     dlx.grid(row=1,column=3)
@@ -176,37 +178,67 @@ def repair():
 
 
 def billboard():
+    prices = {"eng_rep":{1:8000, 0:0}, "car_wash":{"dry":400, "wet":800, "deluxe":1200, "none":0}, "tire":{1:4000, 0:0}, "body_reshp":{1:18000, 0:0}}
+    total=0
     bill = Toplevel()
     info=cur.execute("SELECT * FROM customer c, car_det cd, repair r WHERE c.id=cd.ownerId AND c.id=r.ownerId AND cd.id=r.carId AND c.id="+str(current_user)+" AND cd.id="+str(current_car))
     rows=info.fetchall()
     print(rows)
     Label(bill,text="Name:", justify=LEFT, anchor="w").grid(sticky=W, row=0,column=0)
-    Label(bill,text=rows[0][1], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=1)
+    Label(bill,text=rows[len(rows)-1][1], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=1)
 
     Label(bill,text="Phone Number:", justify=LEFT, anchor="w").grid(sticky=W, row=1,column=0)
-    Label(bill,text=rows[0][2], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=1)
+    Label(bill,text=rows[len(rows)-1][2], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=1)
     
     Label(bill,text="E-Mail:", justify=LEFT, anchor="w").grid(sticky=W, row=2,column=0)
-    Label(bill,text=rows[0][3], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=1)
+    Label(bill,text=rows[len(rows)-1][3], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=1)
 
     Label(bill,text="License Number:", justify=LEFT, anchor="w").grid(sticky=W, row=3,column=0)
-    Label(bill,text=rows[0][4], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=1)
+    Label(bill,text=rows[len(rows)-1][4], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=1)
 
     for i in range(4):
         Label(bill,text="|").grid(row=i,column=2)
 
     Label(bill,text="Car Type:", justify=LEFT, anchor="w").grid(sticky=W, row=0,column=3)
-    Label(bill,text=rows[0][7], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=4)
+    Label(bill,text=rows[len(rows)-1][7], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=4)
 
     Label(bill,text="Car Name:", justify=LEFT, anchor="w").grid(sticky=W, row=1,column=3)
-    Label(bill,text=rows[0][8], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=4)
+    Label(bill,text=rows[len(rows)-1][8], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=4)
 
     Label(bill,text="Kilometers Driven:", justify=LEFT, anchor="w").grid(sticky=W, row=2,column=3)
-    Label(bill,text=rows[0][9], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=4)
+    Label(bill,text=rows[len(rows)-1][9], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=4)
 
     Label(bill, text="Insurance Number:", justify=LEFT, anchor="w").grid(sticky=W, row=3, column=3)
-    Label(bill,text=rows[0][10], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=4)
+    Label(bill,text=rows[len(rows)-1][10], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=4)
 
+    total = prices["eng_rep"][rows[len(rows)-1][16]]+prices["tire"][rows[len(rows)-1][18]]+prices["body_reshp"][rows[len(rows)-1][19]]+prices["car_wash"][rows[len(rows)-1][17]]
+
+    if rows[len(rows)-1][16]==1:
+        Label(bill, text="Engine Repair:", justify=LEFT, anchor="w").grid(sticky=W, row=4, column=0)
+        Label(bill, text=prices["eng_rep"][rows[len(rows)-1][16]]).grid(row=4,column=2)
+        if rows[len(rows)-1][20]!="":
+            Label(bill, text=rows[len(rows)-1][20], justify=LEFT, anchor="w").grid(sticky=W, row=5, column=1)
+
+    if rows[len(rows)-1][18]==1:
+        Label(bill, text="Tire Change:", justify=LEFT, anchor="w").grid(sticky=W, row=6, column=0)
+        Label(bill, text=prices["tire"][rows[len(rows)-1][18]]).grid(row=6,column=2)
+        if rows[len(rows)-1][21]!="":
+            Label(bill, text=rows[len(rows)-1][21], justify=LEFT, anchor="w").grid(sticky=W, row=7, column=1)
+
+    if rows[len(rows)-1][19]==1:
+        Label(bill, text="Body Reshaping:", justify=LEFT, anchor="w").grid(sticky=W, row=8, column=0)
+        Label(bill, text=prices["body_reshp"][rows[len(rows)-1][19]]).grid(row=8,column=2)
+        if rows[len(rows)-1][22]!="":
+            Label(bill, text=rows[len(rows)-1][22], justify=LEFT, anchor="w").grid(sticky=W, row=9, column=1)
+
+    if rows[len(rows)-1][17]!="none":
+        Label(bill, text="Car Washing:", justify=LEFT, anchor="w").grid(sticky=W, row=10, column=0)
+        Label(bill, text=prices["car_wash"][rows[len(rows)-1][17]]).grid( row=10,column=2)
+        Label(bill, text=rows[len(rows)-1][17]+" wash", justify=LEFT, anchor="w").grid(sticky=W, row=11, column=1)
+    Label(bill, text="Total:", justify=LEFT, anchor="w").grid(sticky=W, row=12, column=0)
+    Label(bill, text=total, justify=LEFT, anchor="w").grid(sticky=W, row=12, column=2)
+
+    Button(bill,text="Okay",command=oldNew).grid(row=13,column=2)
 
 dashboard()
 root.mainloop()
