@@ -4,8 +4,7 @@ import sqlite3
 root = Tk()
 conn = sqlite3.connect("database.db")
 cur = conn.cursor()
-current_user=current_car=desc_eng = desc_tire = desc_body = ""
-
+current_user=current_car=desc_eng = desc_tire   = desc_body = ""
 
 
 def dashboard():
@@ -35,9 +34,47 @@ def old():
     oldCust = Toplevel()
     Label(oldCust, text="Enter the phone number: ").grid(row=0, column=0)
     num = Entry(oldCust)
-    phoneNum = int(num.get())
-    # rows = cur.execute("SELECT * FROM customer c, car_dets cd, repair as r WHERE c.phone="+str(phoneNum)+" AND (cd.ownerId=c.id AND (cd.id=r.carId AND c.id=r.ownerId))")
-    # print(rows)
+    num.grid(row=0,column=1)
+    def submit():
+        phoneNum = int(num.get())
+        info=cur.execute("SELECT * FROM customer c, car_det cd WHERE c.id=cd.ownerId AND c.phone="+str(phoneNum))
+        data=info.fetchall()
+        infoDisplay(data)
+    Button(oldCust, text="Enter", command=submit).grid(row=1,column=0)
+
+
+
+def infoDisplay(data):
+    global current_user
+    print(data)
+    infoDis = Toplevel()
+    
+    Label(infoDis,text="Name:", justify=LEFT, anchor="w").grid(sticky=W, row=0,column=0)
+    Label(infoDis,text=data[len(data)-1][1], justify=LEFT, anchor="w").grid(sticky=W, row=0,column=1)
+
+    Label(infoDis,text="Phone Number:", justify=LEFT, anchor="w").grid(sticky=W, row=1,column=0)
+    Label(infoDis,text=data[len(data)-1][2], justify=LEFT, anchor="w").grid(sticky=W, row=1,column=1)
+    
+    Label(infoDis,text="E-Mail:", justify=LEFT, anchor="w").grid(sticky=W, row=2,column=0)
+    Label(infoDis,text=data[len(data)-1][3], justify=LEFT, anchor="w").grid(sticky=W, row=2,column=1)
+
+    Label(infoDis,text="License Number:", justify=LEFT, anchor="w").grid(sticky=W, row=3,column=0)
+    Label(infoDis,text=data[len(data)-1][4], justify=LEFT, anchor="w").grid(sticky=W, row=3,column=1)
+
+    car = IntVar()
+    i=0
+    for row in data:
+        i+=1
+        Radiobutton(infoDis,text=row[8],variable=car,value=row[5]).grid(row=3+i,column=0)
+    
+    current_user=data[0][0]
+    def submit():
+        global current_car
+        current_car=car.get()
+        repair()
+    print(current_user,current_car)
+    Button(infoDis, text="Add new car", command=carDetails).grid(row=4+i,column=0)
+    Button(infoDis, text="Repair the selected car", command=submit).grid(row=5+i,column=0)
 
 
 
@@ -58,7 +95,7 @@ def new():
     email.grid(row=2,column=1)
     liceNum.grid(row=3,column=1)
    
-    cmd = "CREATE TABLE IF NOT EXISTS 'customer' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'name' TEXT DEFAULT NULL, 'phone' NUMERIC DEFAULT NULL, 'email' TEXT DEFAULT NULL, 'licenseNum' TEXT DEFAULT NULL);"
+    cmd = "CREATE TABLE IF NOT EXISTS 'customer' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'name' TEXT DEFAULT NULL, 'phone' NUMERIC DEFAULT NULL UNIQUE, 'email' TEXT DEFAULT NULL, 'licenseNum' TEXT DEFAULT NULL);"
     cmd1 = "CREATE TABLE IF NOT EXISTS 'car_det' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'ownerId' NUMERIC DEFAULT NULL REFERENCES 'customer' ('id'), 'type' TEXT DEFAULT NULL, 'name' TEXT DEFAULT NULL, 'kilometers' INTEGER DEFAULT NULL, 'insurance' TEXT DEFAULT NULL, 'engineNum' TEXT DEFAULT NULL, 'chassisNum' TEXT DEFAULT NULL);"
     cmd2 = "CREATE TABLE IF NOT EXISTS 'repair' ( 'id' INTEGER DEFAULT NULL PRIMARY KEY AUTOINCREMENT, 'ownerId' NUMERIC DEFAULT NULL REFERENCES 'customer' ('id'), 'carId' NUMERIC DEFAULT NULL REFERENCES 'car_det' ('id'), 'engine' INTEGER DEFAULT NULL, 'carWash' TEXT DEFAULT NULL, 'tireChange' INTEGER DEFAULT NULL, 'bodyReshaping' INTEGER DEFAULT NULL, 'desc_engine' TEXT DEFAULT NULL, 'desc_tire' TEXT DEFAULT NULL, 'desc_body' TEXT DEFAULT NULL);"
     cur.execute(cmd)
